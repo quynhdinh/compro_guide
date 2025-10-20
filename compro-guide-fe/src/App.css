@@ -152,6 +152,56 @@
   background: #fafafa;
 }
 
+/* Modal styles */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 200;
+  padding: 1rem;
+}
+
+.modal {
+  background: white;
+  color: #111;
+  max-width: 920px;
+  width: 100%;
+  border-radius: 12px;
+  box-shadow: 0 18px 50px rgba(0,0,0,0.35);
+  position: relative;
+  max-height: 92vh;
+  overflow: auto;
+  border: 1px solid rgba(0,0,0,0.06);
+}
+
+.modal-close {
+  position: absolute;
+  right: 10px;
+  top: 8px;
+  background: transparent;
+  border: none;
+  font-size: 1.4rem;
+  cursor: pointer;
+  width: 36px;
+  height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  transition: background 120ms ease;
+}
+
+.modal-close:hover {
+  background: rgba(0,0,0,0.06);
+}
+
+.modal-content {
+  padding: 1.25rem 1.5rem 2.25rem 1.5rem;
+}
+
 .review-head {
   display: flex;
   justify-content: space-between;
@@ -237,6 +287,52 @@
   border-radius: 6px;
 }
 
+/* Generic input styles used by create modal */
+.input {
+  width: 100%;
+  padding: 0.6rem 0.75rem;
+  border: 1px solid rgba(0,0,0,0.08);
+  border-radius: 8px;
+  box-sizing: border-box;
+  font-size: 0.95rem;
+}
+
+.tag-input-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.tags-row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.tag-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(0,0,0,0.06);
+  color: #111;
+  padding: 0.28rem 0.5rem;
+  border-radius: 999px;
+  font-size: 0.85rem;
+}
+
+.tag-remove {
+  background: transparent;
+  border: none;
+  font-size: 0.95rem;
+  cursor: pointer;
+  padding: 0 4px;
+  line-height: 1;
+}
+
+.modal .error {
+  margin-bottom: 8px;
+}
+
 .review-form textarea {
   min-height: 80px;
 }
@@ -286,6 +382,101 @@
   margin: 2rem auto;
   text-align: left;
   padding: 0 1rem;
+}
+
+/* Chatbot floating widget (lower-left) */
+.chatbot {
+  position: fixed;
+  left: 20px;
+  bottom: 20px;
+  z-index: 400;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.chatbot-button {
+  width: 56px;
+  height: 56px;
+  border-radius: 14px;
+  background: linear-gradient(180deg,#007bff,#0062cc);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+  cursor: pointer;
+}
+
+.chatbot-panel {
+  width: 320px;
+  max-height: 480px;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 18px 50px rgba(0,0,0,0.28);
+  overflow: hidden;
+  border: 1px solid rgba(0,0,0,0.06);
+  display: flex;
+  flex-direction: column;
+}
+
+.chatbot-header {
+  padding: 10px 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid rgba(0,0,0,0.04);
+  font-weight: 700;
+}
+
+.chatbot-list {
+  padding: 12px;
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background: linear-gradient(180deg, #fafafa, #ffffff);
+  flex: 1 1 auto;
+}
+
+.chatbot-msg {
+  max-width: 86%;
+}
+
+.chatbot-msg.user {
+  align-self: flex-end;
+  background: linear-gradient(180deg,#007bff,#0062cc);
+  color: white;
+  padding: 8px 10px;
+  border-radius: 10px 10px 6px 10px;
+}
+
+.chatbot-msg.bot {
+  align-self: flex-start;
+  background: rgba(0,0,0,0.06);
+  color: #111;
+  padding: 8px 10px;
+  border-radius: 10px 10px 10px 6px;
+}
+
+.chatbot-msg-text {
+  font-size: 0.95rem;
+  line-height: 1.2;
+}
+
+.chatbot-input-row {
+  padding: 10px;
+  display: flex;
+  gap: 8px;
+  border-top: 1px solid rgba(0,0,0,0.04);
+}
+
+.chatbot .input {
+  padding: 8px 10px;
+}
+
+@media (max-width: 520px) {
+  .chatbot-panel { width: 280px; max-height: 420px; }
 }
 
 @keyframes App-logo-spin {

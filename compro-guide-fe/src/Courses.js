@@ -11,6 +11,7 @@ export default function Courses() {
   const [courseReviewsLoading, setCourseReviewsLoading] = useState(false);
   const [courseReviewsError, setCourseReviewsError] = useState(null);
   const [showReviewForm, setShowReviewForm] = useState(false);
+  const [showModal, setShowModal] = useState(false);
   const [formState, setFormState] = useState({
     reviewerName: 'Anonymous',
     difficulty: 3,
@@ -44,11 +45,22 @@ export default function Courses() {
     return () => { mounted = false; };
   }, []);
 
+  function formatNumber(n, decimals = 2) {
+    if (n === undefined || n === null) return 'N/A';
+    const num = Number(n);
+    if (Number.isNaN(num)) return 'N/A';
+    let s = num.toFixed(decimals);
+    // trim trailing zeros and optional dot
+    s = s.replace(/\.0+$|(?<=\.[0-9]*?)0+$/g, '').replace(/\.$/, '');
+    return s;
+  }
+
   function selectCourse(course) {
     setSelectedCourse(course);
     setCourseReviews(null);
     setCourseReviewsError(null);
     setCourseReviewsLoading(true);
+    setShowModal(true);
 
     const id = course.courseId
     fetch(`http://localhost:8080/api/reviews/${encodeURIComponent(id)}`)
@@ -131,93 +143,110 @@ export default function Courses() {
               >
                 <h3 className="course-title">{c.title || c.name || `Course ${i + 1}`}</h3>
                 <p className="course-desc">{c.description || c.summary || ''}</p>
+                <div style={{ marginTop: 8, display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+                  <span className="badge">Reviews: {c.reviewCount ?? c.reviews ?? 0}</span>
+                  <span className="badge">Avg Rating: {formatNumber(c.averageRating ?? c.avgRating ?? c.rating)}</span>
+                  <span className="badge">Avg Difficulty: {formatNumber(c.averageDifficulty ?? c.avgDifficulty ?? c.difficulty)}</span>
+                  <span className="badge">Avg Workload: {formatNumber(c.averageWorkload ?? c.avgWorkload ?? c.workload)} hrs</span>
+                </div>
               </article>
             ))}
           </div>
 
-          <aside className="course-detail">
-            {!selectedCourse && <p className="muted">Select a course to view details.</p>}
-            {selectedCourse && (
-              <div>
-                <h3>{selectedCourse.title || selectedCourse.name}</h3>
-                <p>{selectedCourse.description || selectedCourse.summary || 'No description provided.'}</p>
+          {/* Modal will show reviews when a course is selected */}
+        </div>
+      )}
 
-                <div className="course-reviews">
-                  <h4>Reviews for this course</h4>
-                  {courseReviewsLoading && <p className="muted">Loading reviews…</p>}
-                  {courseReviewsError && <p className="error">Error: {courseReviewsError}</p>}
-                  <div style={{ marginTop: 8 }}>
-                    <button className="btn" onClick={() => setShowReviewForm((s) => !s)}>{showReviewForm ? 'Cancel' : 'Add a review'}</button>
-                  </div>
-
-                  {showReviewForm && (
-                    <form className="review-form" onSubmit={submitReview}>
-                      <label>
-                        Your name
-                        <input value={formState.reviewerName} onChange={(e) => setFormState((s) => ({ ...s, reviewerName: e.target.value }))} />
-                      </label>
-                      <label>
-                        Difficulty (1-5)
-                        <input type="number" min={1} max={5} value={formState.difficulty} onChange={(e) => setFormState((s) => ({ ...s, difficulty: e.target.value }))} />
-                      </label>
-                      <label>
-                        Workload per week (hours)
-                        <input value={formState.workload} onChange={(e) => setFormState((s) => ({ ...s, workload: e.target.value }))} />
-                      </label>
-                      <label>
-                        Rating (1-5)
-                        <input type="number" min={1} max={5} value={formState.rating} onChange={(e) => setFormState((s) => ({ ...s, rating: e.target.value }))} />
-                      </label>
-                      <label> 
-                        Comment
-                        <textarea value={formState.comment} onChange={(e) => setFormState((s) => ({ ...s, comment: e.target.value }))} />
-                      </label>
-                      {formError && <p className="error">{formError}</p>}
-                      <div>
-                        <button className="btn primary" type="submit" disabled={formSubmitting}>{formSubmitting ? 'Submitting…' : 'Submit review'}</button>
-                      </div>
-                    </form>
-                  )}
-                  {!courseReviewsLoading && !courseReviewsError && Array.isArray(courseReviews) && (
-                    <div className="reviews-list">
-                      {courseReviews.length === 0 && <p>No reviews for this course yet.</p>}
-                      {courseReviews.map((r, i) => {
-                        const createdTs = r.created ? Number(r.created) * 1000 : null;
-                        const createdDate = createdTs ? new Date(createdTs).toLocaleString() : null;
-                        const rating = r.rating ?? r.score ?? null;
-                        return (
-                          <article key={r.reviewId ?? r.id ?? i} className="review-card">
-                            <div className="review-head">
-                              <div>
-                                <div className="reviewer-name">{r.reviewerName || r.author || 'Anonymous'}</div>
-                                {createdDate && <div className="review-created">{createdDate}</div>}
-                              </div>
-                              <div className="review-stats">
-                                {rating != null && (
-                                  <div className="review-rating" aria-label={`Rating ${rating}`}>
-                                    {Array.from({ length: Math.max(0, Math.min(5, Math.round(rating))) }).map((_, k) => (
-                                      <span key={k}>⭐</span>
-                                    ))}
-                                  </div>
-                                )}
-                              </div>
-                            </div>
-
-                            <div className="review-comment">{r.comment || r.body || r.content || ''}</div>
-
-                            <div className="review-meta">
-                              <span className="badge">Difficulty: {r.difficulty ?? 'N/A'}</span>
-                              <span className="badge">Workload: {r.workload ?? 'N/A'}</span>
-                            </div>
-                          </article>
-                        );
-                      })}
-                    </div>
-                  )}
-                </div>
+      {showModal && selectedCourse && (
+        <div className="modal-overlay" role="dialog" aria-modal="true">
+          <div className="modal">
+            <button className="modal-close" onClick={() => { setShowModal(false); setSelectedCourse(null); }} aria-label="Close">×</button>
+            <div className="modal-content">
+              <h3>{selectedCourse.title || selectedCourse.name}</h3>
+              <p>{selectedCourse.description || selectedCourse.summary || 'No description provided.'}</p>
+              <div style={{ marginTop: 8, display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                <span className="badge">Reviews: {selectedCourse.reviewCount ?? selectedCourse.reviews ?? 'N/A'}</span>
+                <span className="badge">Avg Rating: {formatNumber(selectedCourse.averageRating ?? selectedCourse.avgRating ?? selectedCourse.rating)}</span>
+                <span className="badge">Avg Difficulty: {formatNumber(selectedCourse.averageDifficulty ?? selectedCourse.avgDifficulty ?? selectedCourse.difficulty)}</span>
+                <span className="badge">Avg Workload: {formatNumber(selectedCourse.averageWorkload ?? selectedCourse.avgWorkload ?? selectedCourse.workload)} hrs</span>
               </div>
-            )}
-          </aside>
+
+              <div className="course-reviews">
+                <h4>Reviews for this course</h4>
+                {courseReviewsLoading && <p className="muted">Loading reviews…</p>}
+                {courseReviewsError && <p className="error">Error: {courseReviewsError}</p>}
+                <div style={{ marginTop: 8 }}>
+                  <button className="btn" onClick={() => setShowReviewForm((s) => !s)}>{showReviewForm ? 'Cancel' : 'Add a review'}</button>
+                </div>
+
+                {showReviewForm && (
+                  <form className="review-form" onSubmit={submitReview}>
+                    <label>
+                      Your name
+                      <input value={formState.reviewerName} onChange={(e) => setFormState((s) => ({ ...s, reviewerName: e.target.value }))} />
+                    </label>
+                    <label>
+                      Difficulty (1-5)
+                      <input type="number" min={1} max={5} value={formState.difficulty} onChange={(e) => setFormState((s) => ({ ...s, difficulty: e.target.value }))} />
+                    </label>
+                    <label>
+                      Workload per week (hours)
+                      <input value={formState.workload} onChange={(e) => setFormState((s) => ({ ...s, workload: e.target.value }))} />
+                    </label>
+                    <label>
+                      Rating (1-5)
+                      <input type="number" min={1} max={5} value={formState.rating} onChange={(e) => setFormState((s) => ({ ...s, rating: e.target.value }))} />
+                    </label>
+                    <label>
+                      Comment
+                      <textarea value={formState.comment} onChange={(e) => setFormState((s) => ({ ...s, comment: e.target.value }))} />
+                    </label>
+                    {formError && <p className="error">{formError}</p>}
+                    <div>
+                      <button className="btn primary" type="submit" disabled={formSubmitting}>{formSubmitting ? 'Submitting…' : 'Submit review'}</button>
+                    </div>
+                  </form>
+                )}
+
+                {!courseReviewsLoading && !courseReviewsError && Array.isArray(courseReviews) && (
+                  <div className="reviews-list">
+                    {courseReviews.length === 0 && <p>No reviews for this course yet.</p>}
+                    {courseReviews.map((r, i) => {
+                      const createdTs = r.created ? Number(r.created) * 1000 : null;
+                      const createdDate = createdTs ? new Date(createdTs).toLocaleString() : null;
+                      const rating = r.rating ?? r.score ?? null;
+                      return (
+                        <article key={r.reviewId ?? r.id ?? i} className="review-card">
+                          <div className="review-head">
+                            <div>
+                              <div className="reviewer-name">{r.reviewerName || r.author || 'Anonymous'}</div>
+                              {createdDate && <div className="review-created">{createdDate}</div>}
+                            </div>
+                            <div className="review-stats">
+                              {rating != null && (
+                                <div className="review-rating" aria-label={`Rating ${rating}`}>
+                                  {Array.from({ length: Math.max(0, Math.min(5, Math.round(rating))) }).map((_, k) => (
+                                    <span key={k}>⭐</span>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+                          </div>
+
+                          <div className="review-comment">{r.comment || r.body || r.content || ''}</div>
+
+                          <div className="review-meta">
+                            <span className="badge">Difficulty: {r.difficulty ?? 'N/A'}</span>
+                            <span className="badge">Workload: {r.workload ?? 'N/A'}</span>
+                          </div>
+                        </article>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
         </div>
       )}
     </section>

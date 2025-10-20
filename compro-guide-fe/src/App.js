@@ -2,7 +2,8 @@ import React from 'react';
 import './App.css';
 import Courses from './Courses';
 import Home from './Home';
-import Blog from './Home';
+import Blog from './Blog';
+import Chatbot from './Chatbot';
 import { BrowserRouter, Routes, Route, NavLink, Navigate } from 'react-router-dom';
 // create a new file src/Index.js with the following content:
 
@@ -25,6 +26,7 @@ function App() {
             <Route path="/blog" element={<Blog />} />
           </Routes>
         </main>
+        <Chatbot />
       </div>
     </BrowserRouter>
   );

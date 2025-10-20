@@ -73,3 +73,9 @@ public class Blog {
 */
 
 insert into blogs (title, content, tags, created) values ('Introduction to Compro Guide', 'Welcome to Compro Guide, your go-to resource for competitive programming!', 'introduction,compro_guide', extract(epoch from now()));
+insert into blogs (title, content, tags, created) values ('How to survive winter!', 'Winter is coming! Here are some tips to stay warm and productive during the cold months.', 'getting_started,survival', extract(epoch from now()));
+
+-- add some blogs regarding how to aclimated to school life in the US for international students
+insert into blogs (title, content, tags, created) values ('Adapting to School Life in the US as an International Student', 'Moving to a new country for studies can be challenging. Here are some tips to help you adapt to school life in the US.', 'international_students,adaptation,school_life', extract(epoch from now()));
+insert into blogs (title, content, tags, created) values ('Making Friends as an International Student', 'Building a social network is crucial for your well-being. Here are some strategies to make friends and connect with others on campus.', 'international_students,social_life,friends', extract(epoch from now()));
+insert into blogs (title, content, tags, created) values ('Managing Homesickness While Studying Abroad', 'Feeling homesick is normal. Here are some ways to cope with homesickness and stay connected with your loved ones.', 'international_students,homesickness,mental_health', extract(epoch from now()));
