@@ -1,0 +1,23 @@
+<div th:fragment="content">
+    <div class="topbar">
+    <div class="brand">Compro Guide</div>
+    <a href="/fragment/reviews" style="text-decoration:none;color:inherit">
+      <button type="button">Reviews</button>
+    </a>
+    <a href="/fragment/blogs" style="text-decoration:none;color:inherit">
+      <button type="button">Blog</button>
+    </a>
+    <a href="/fragment/courses" style="text-decoration:none;color:inherit">
+      <button type="button">Courses</button>
+    </a>
+  </div>
+  <h2>Courses</h2>
+  <div th:if="${#lists.isEmpty(courses)}">No courses found.</div>
+  <div th:each="c : ${courses}">
+    <div class="card">
+      <div><strong th:text="${c.title}">Course title</strong></div>
+      <div th:text="${c.description}">Description</div>
+      <div style="font-size:smaller;color:gray">Course ID: <span th:text="${c.courseId}">1001</span></div>
+    </div>
+  </div>
+</div>

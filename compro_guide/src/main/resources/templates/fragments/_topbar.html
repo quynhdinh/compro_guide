@@ -1,0 +1,6 @@
+<div th:fragment="topbar" class="topbar">
+  <div class="brand">Compro Guide</div>
+  <button type="button" hx-get="/fragment/reviews" hx-target="#main" hx-swap="innerHTML">Reviews</button>
+  <button type="button" hx-get="/fragment/blogs" hx-target="#main" hx-swap="innerHTML">Blog</button>
+  <button type="button" hx-get="/fragment/courses" hx-target="#main" hx-swap="innerHTML">Courses</button>
+</div>
