@@ -1,5 +1,8 @@
 package com.quynhdv.compro_guide.courses;
 import org.springframework.web.bind.annotation.RestController;
+
+import com.quynhdv.compro_guide.courses.dto.CourseSummary;
+
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import java.util.*;
@@ -14,7 +17,6 @@ public class CourseController {
         this.courseService = courseService;
     }
 
-    // rewrite get all courses endpoint here
     @GetMapping
     public List<Course> getAllCourses() {
         return courseService.getAllCourses();

@@ -4,7 +4,9 @@
   <div th:each="r : ${reviews}">
     <div class="card">
       <div><strong th:text="${r.reviewerName}">Reviewer</strong> <span style="color:gray">(Rating: <span th:text="${r.rating}">5</span>)</span></div>
-      <div th:text="${r.comment}">Good course</div>
+      <div th:text="${r.comment}" + >Good course</div>
+      <!-- convert r.created from epoch to readable date -->
+      <div th:text="${#dates.format(r.created, 'dd MMM yyyy')}">Date</div>
       <div style="font-size:smaller;color:gray">Course ID: <span th:text="${r.courseId}">1001</span></div>
     </div>
   </div>

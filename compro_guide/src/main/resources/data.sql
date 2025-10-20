@@ -53,3 +53,23 @@ insert into reviews (course_id, reviewer_name, comment, rating, difficulty, work
 insert into reviews (course_id, reviewer_name, comment, rating, difficulty, workload, created) values ('CS304', 'Noah', 'A bit fast-paced but overall a great learning experience.', 4, 4, 5, extract(epoch from now()));
 insert into reviews (course_id, reviewer_name, comment, rating, difficulty, workload, created) values ('CS303', 'Alice', 'Great introduction to programming concepts.', 5, 3, 4, extract(epoch from now()));
 insert into reviews (course_id, reviewer_name, comment, rating, difficulty, workload, created) values ('CS303', 'Bob', 'Challenging but rewarding course.', 4, 4, 5, extract(epoch from now())); 
+
+delete from blogs;
+/*
+
+public class Blog {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long blogId;
+    @Column(name = "title", nullable = false)
+    private String title;
+    @Column(name = "content", nullable = false, columnDefinition = "TEXT")
+    private String content;
+    @Column(name = "tags", nullable = false)
+    private String tags;
+	@Column(name = "created", nullable = false)
+	private Integer created;
+}
+*/
+
+insert into blogs (title, content, tags, created) values ('Introduction to Compro Guide', 'Welcome to Compro Guide, your go-to resource for competitive programming!', 'introduction,compro_guide', extract(epoch from now()));
