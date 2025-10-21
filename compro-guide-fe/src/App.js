@@ -14,8 +14,8 @@ function App() {
         <div className="topbar">
           <NavLink to="/" className="brand">Compro Guide</NavLink>
           <nav className="nav">
-            <NavLink className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`} to="/courses">Courses</NavLink>
-            <NavLink className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`} to="/blog">Blog</NavLink>
+            <NavLink className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`} to="/courses">Courses reviews</NavLink>
+            <NavLink className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`} to="/blog">Guides</NavLink>
           </nav>
         </div>
 

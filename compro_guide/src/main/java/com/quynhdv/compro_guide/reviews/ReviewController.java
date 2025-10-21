@@ -2,11 +2,9 @@ package com.quynhdv.compro_guide.reviews;
 
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.http.HttpMethod;
 
 import lombok.AllArgsConstructor;
 
-import java.sql.Time;
 import java.util.List;
 
 @AllArgsConstructor

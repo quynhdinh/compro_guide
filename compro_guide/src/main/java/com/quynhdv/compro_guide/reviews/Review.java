@@ -20,10 +20,12 @@ public class Review {
 	private String courseId;
 	@Column(name = "reviewer_name", nullable = false)
 	private String reviewerName;
-	@Column(name = "comment", nullable = false)
+	@Column(name = "comment", nullable = false, length = 1000)
 	private String comment;
 	@Column(name = "rating", nullable = false)
 	private Integer rating;
+	@Column(name = "date_taken", nullable = true)
+	private Integer dateTaken;
 	@Column(name = "difficulty", nullable = false)
 	private Integer difficulty;
 	@Column(name = "workload", nullable = false)

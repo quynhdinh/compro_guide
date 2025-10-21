@@ -3,6 +3,7 @@ import './App.css';
 
 export default function Blog() {
   const [posts, setPosts] = useState(null);
+  const [tagsWithCount, setTagsWithCount] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [selectedPost, setSelectedPost] = useState(null);
@@ -16,6 +17,7 @@ export default function Blog() {
   const [tags, setTags] = useState([tagInput]);
   const [createError, setCreateError] = useState(null);
   const [createLoading, setCreateLoading] = useState(false);
+  const [selectedTags, setSelectedTags] = useState([]);
 
   // loadPosts is reusable so we can call it after creating a new post
   useEffect(() => {
@@ -39,14 +41,50 @@ export default function Blog() {
       }
     }
     loadPosts();
+    // load tags with counts
+    (async function loadTags() {
+      try {
+        const r = await fetch('/api/blogs/tags');
+        if (!r.ok) throw new Error('Failed to load tags');
+        const d = await r.json();
+        if (mounted) {
+          // backend returns an object map like { "tag1": 5, "tag2": 8 }
+          let arr = [];
+          if (d && typeof d === 'object' && !Array.isArray(d)) {
+            arr = Object.keys(d).map(k => ({ tag: k, count: Number(d[k] || 0) }));
+          } else if (Array.isArray(d)) {
+            arr = d.slice();
+          }
+          arr.sort((a, b) => (b.count ?? 0) - (a.count ?? 0));
+          setTagsWithCount(arr);
+        }
+      } catch (err) {
+        // silently ignore tags error for now
+        if (mounted) setTagsWithCount(null);
+      }
+    })();
     return () => { mounted = false; };
   }, []);
 
+  // make it month/day/year only
   function formatCreated(post) {
     const ts = post.created ?? post.published ?? post.date ?? null;
     if (!ts) return null;
     const n = Number(ts) < 1e12 ? Number(ts) * 1000 : Number(ts);
-    return new Date(n).toLocaleString();
+    return new Date(n).toLocaleDateString('en-US');
+  }
+
+  // normalize tags from a post into an array of strings
+  function getPostTags(p) {
+    if (!p) return [];
+    if (Array.isArray(p.tags)) return p.tags.map(x => String(x).trim()).filter(Boolean);
+    if (typeof p.tags === 'string' && p.tags.trim()) return p.tags.split(/\s*,\s*/).map(x => x.trim()).filter(Boolean);
+    // fallback fields
+    if (Array.isArray(p.tag)) return p.tag.map(x => String(x).trim()).filter(Boolean);
+    if (typeof p.tag === 'string' && p.tag.trim()) return p.tag.split(/\s*,\s*/).map(x => x.trim()).filter(Boolean);
+    if (Array.isArray(p.tags_raw)) return p.tags_raw.map(x => String(x).trim()).filter(Boolean);
+    if (typeof p.tags_raw === 'string' && p.tags_raw.trim()) return p.tags_raw.split(/\s*,\s*/).map(x => x.trim()).filter(Boolean);
+    return [];
   }
 
   // Tag helpers for create modal
@@ -109,7 +147,7 @@ export default function Blog() {
   return (
     <section className="section">
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <h2>Blog</h2>
+        <h2>Blogs</h2>
         <div>
           <button className="btn primary" onClick={() => setCreateModal(true)}>Create New Post</button>
         </div>
@@ -122,9 +160,55 @@ export default function Blog() {
       )}
 
       {!loading && !error && Array.isArray(posts) && (
-        <div className="reviews-list">
+        <div className="blog-container">
+          <aside className="tag-list">
+            <h3>Tags</h3>
+            {!tagsWithCount && <p className="muted">Loading tags…</p>}
+            {Array.isArray(tagsWithCount) && (
+              <ul>
+                {tagsWithCount.map((t) => {
+                  const checked = selectedTags.includes(t.tag);
+                  return (
+                    <li key={t.tag} style={{ display: 'flex', justifyContent: 'space-between', gap: 8, alignItems: 'center' }}>
+                      <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                        <input type="checkbox" checked={checked} onChange={() => {
+                          setSelectedTags(prev => checked ? prev.filter(x => x !== t.tag) : [...prev, t.tag]);
+                        }} />
+                        <span>{t.tag}</span>
+                      </div>
+                      <span className="badge">{t.count}</span>
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
+          </aside>
+
+          <div className="reviews-list">
           {posts.length === 0 && <p>No posts found.</p>}
-          {posts.map((p, i) => (
+          {selectedTags.length > 0 && <div style={{ marginBottom: 8 }} className="muted">Filtering by: {selectedTags.join(', ')}</div>}
+          {(function(){
+            // client-side OR filtering: a post is shown if it has any of the selected tags
+            if (!Array.isArray(posts)) return null;
+            if (!selectedTags || selectedTags.length === 0) return posts;
+            const normalized = posts.filter(p => {
+              // support tags as array or comma-separated string
+              let ptags = [];
+              if (Array.isArray(p.tags)) ptags = p.tags.map(x => String(x).trim());
+              else if (typeof p.tags === 'string' && p.tags.trim()) ptags = p.tags.split(/\s*,\s*/).map(x => x.trim());
+              else if (p.tag || p.tags_raw) {
+                const v = p.tag || p.tags_raw;
+                if (Array.isArray(v)) ptags = v.map(x => String(x).trim());
+                else if (typeof v === 'string' && v.trim()) ptags = v.split(/\s*,\s*/).map(x => x.trim());
+              }
+              if (!ptags || ptags.length === 0) return false;
+              for (const t of selectedTags) {
+                if (ptags.includes(t)) return true;
+              }
+              return false;
+            });
+            return normalized;
+          })().map((p, i) => (
             <article
               key={p.id ?? p.blogId ?? i}
               className="review-card"
@@ -135,12 +219,20 @@ export default function Blog() {
             >
               <h3 className="review-title">{p.title || p.subject || `Post ${i + 1}`}</h3>
               <div className="review-body">{p.excerpt || p.summary || (p.body ? (typeof p.body === 'string' ? (p.body.slice(0, 200) + (p.body.length > 200 ? '…' : '')) : '') : '')}</div>
-              <div style={{ marginTop: 6, fontSize: '0.9rem', color: '#666' }}>
-                {p.author ? `By ${p.author}` : ''}
-                {formatCreated(p) && ` • Created on ${formatCreated(p)}`}
+              <div style={{ marginTop: 6, fontSize: '0.9rem', color: '#666', display: 'flex', alignItems: 'center', gap: 8, justifyContent: 'space-between' }}>
+                <div>
+                  {p.author ? `By ${p.author}` : ''}
+                  {formatCreated(p) && ` • ${formatCreated(p)}`}
+                </div>
+                <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+                  {getPostTags(p).map((t, idx) => (
+                    <span key={idx} className="tag-chip" style={{ fontSize: '0.85rem' }}>{t}</span>
+                  ))}
+                </div>
               </div>
             </article>
           ))}
+        </div>
         </div>
       )}
 
@@ -150,9 +242,16 @@ export default function Blog() {
             <button className="modal-close" onClick={() => { setShowModal(false); setSelectedPost(null); }} aria-label="Close">×</button>
             <div className="modal-content">
               <h2>{selectedPost.title || selectedPost.subject}</h2>
-              <div style={{ color: '#666', marginBottom: 8 }}>
-                {selectedPost.author ? `By ${selectedPost.author}` : ''}
-                {formatCreated(selectedPost) && ` • Created on ${formatCreated(selectedPost)}`}
+              <div style={{ color: '#666', marginBottom: 8, display: 'flex', alignItems: 'center', gap: 8, justifyContent: 'space-between' }}>
+                <div>
+                  {selectedPost.author ? `By ${selectedPost.author}` : ''}
+                  {formatCreated(selectedPost) && ` • ${formatCreated(selectedPost)}`}
+                </div>
+                <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+                  {getPostTags(selectedPost).map((t, i) => (
+                    <span key={i} className="tag-chip" style={{ fontSize: '0.85rem' }}>{t}</span>
+                  ))}
+                </div>
               </div>
               <div className="review-body">{selectedPost.body || selectedPost.content || selectedPost.excerpt || ''}</div>
             </div>

@@ -1,7 +1,7 @@
 package com.quynhdv.compro_guide.blogs;
 
 
-import java.util.List;
+import java.util.*;
 import org.springframework.stereotype.Service;
 
 import lombok.AllArgsConstructor;
@@ -15,5 +15,14 @@ public class BlogService {
     }
     public Blog createBlog(Blog blog) {
         return blogRepository.save(blog);
+    }
+    public Map<String, Integer> getAllTags() {
+        return blogRepository.findAll().stream()
+                .map(Blog::getTags)
+                .flatMap(tags -> List.of(tags.split(",")).stream())
+                .map(String::trim)
+                .collect(HashMap<String, Integer>::new,
+                        (map, tag) -> map.put(tag, map.getOrDefault(tag, 0) + 1),
+                        HashMap::putAll);
     }
 }

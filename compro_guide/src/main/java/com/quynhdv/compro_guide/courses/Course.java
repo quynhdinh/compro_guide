@@ -19,7 +19,8 @@ public class Course {
 	private String courseId;
     @Column(name = "title", nullable = false)
 	private String title;
-    @Column(name = "description", nullable = false)
+     // 500 characters
+    @Column(name = "description", nullable = false, length = 500)
 	private String description;
     // credit
     @Column(name = "credits", nullable = false)
