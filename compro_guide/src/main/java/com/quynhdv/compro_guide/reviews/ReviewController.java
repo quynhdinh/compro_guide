@@ -41,11 +41,11 @@ public class ReviewController {
         r.setDateTaken(review.date_taken());
         r.setCreated((int)(System.currentTimeMillis() / 1000L));
         String verdict = aiService.analyzeSentiment(review.comment());
-        if(verdict.equals("negative")){
+        if(verdict.toLowerCase().contains("failed")){
             log.info("Reject with verdict " + verdict);
             return Optional.empty();
         }
-        log.info("Passed " + review.comment() + " with sentiment " + verdict);
+        log.info("Passed [" + review.comment() + " ] with verdict " + verdict);
         return Optional.ofNullable(reviewService.createReview(r));
 
     }

@@ -21,7 +21,9 @@ export default function Courses() {
     comment: 'This course is amazing'
   });
   const [formError, setFormError] = useState(null);
+  const [fieldErrors, setFieldErrors] = useState({});
   const [formSubmitting, setFormSubmitting] = useState(false);
+  const [rejectionModal, setRejectionModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [debouncedQuery, setDebouncedQuery] = useState('');
   const [sortBy, setSortBy] = useState('name');
@@ -144,14 +146,40 @@ export default function Courses() {
   async function submitReview(e) {
     e.preventDefault();
     setFormError(null);
+    setFieldErrors({});
     // require a selected course and use its id
     const courseId = selectedCourse?.courseId;
     if (!courseId) {
       setFormError('Please select a course before submitting a review');
       return;
     }
-    // default reviewer name to 'Anonymous' when cleared
-    const reviewerName = formState.reviewerName?.trim() || 'Anonymous';
+    // validate all fields (all required)
+    const errors = {};
+    const reviewerName = formState.reviewerName?.trim();
+    if (!reviewerName) errors.reviewerName = 'Name is required';
+    const difficulty = Number(formState.difficulty);
+    if (!formState.difficulty && formState.difficulty !== 0) errors.difficulty = 'Difficulty is required';
+    else if (Number.isNaN(difficulty) || difficulty < 1 || difficulty > 5) errors.difficulty = 'Difficulty must be a number between 1 and 5';
+    const workload = Number(formState.workload);
+    if (formState.workload === '' || formState.workload === null || formState.workload === undefined) errors.workload = 'Workload is required';
+    else if (Number.isNaN(workload) || workload < 0) errors.workload = 'Workload must be a non-negative number';
+    const dateTakenVal = formState.date_taken;
+    if (!dateTakenVal) errors.date_taken = 'Date taken is required';
+    else {
+      const dt = new Date(dateTakenVal);
+      if (Number.isNaN(dt.getTime())) errors.date_taken = 'Invalid date';
+    }
+    const rating = Number(formState.rating);
+    if (formState.rating === '' || formState.rating === null || formState.rating === undefined) errors.rating = 'Rating is required';
+    else if (Number.isNaN(rating) || rating < 1 || rating > 5) errors.rating = 'Rating must be a number between 1 and 5';
+    const comment = formState.comment?.trim();
+    if (!comment) errors.comment = 'Comment is required';
+
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors);
+      setFormError('Please fix the highlighted fields');
+      return;
+    }
     setFormSubmitting(true);
     try {
       const payload = {
@@ -161,7 +189,8 @@ export default function Courses() {
         rating: Number(formState.rating),
         difficulty: Number(formState.difficulty),
         workload: formState.workload,
-        date_taken: (new Date(formState.date_taken).getTime()) / 1000 || null
+        // send date_taken as UNIX seconds
+        date_taken: Math.floor(new Date(formState.date_taken).getTime() / 1000) || null
       };
       const resp = await fetch('http://localhost:8080/api/reviews', {
         method: 'POST',
@@ -169,13 +198,21 @@ export default function Courses() {
         body: JSON.stringify(payload)
       });
       if (!resp.ok) throw new Error(`Request failed: ${resp.status} ${resp.statusText}`);
-      // On success, re-fetch reviews for the current selected course
-      if (selectedCourse) {
-        selectCourse(selectedCourse);
+      // read response body — some backends return null to indicate rejection
+      const respBody = await resp.json().catch(() => null);
+      if (respBody === null) {
+        // show a gentle rejection message
+        setRejectionModal(true);
+      } else {
+        // On success, re-fetch reviews for the current selected course
+        if (selectedCourse) {
+          selectCourse(selectedCourse);
+        }
       }
       // reset form
   setShowReviewForm(false);
   setFormState({ reviewerName: 'Anonymous', difficulty: 3, workload: '', date_taken: '', rating: 5, comment: 'This course is amazing' });
+  setFieldErrors({});
     } catch (err) {
       setFormError(err.message || 'Failed to submit review');
     } finally {
@@ -273,31 +310,37 @@ export default function Courses() {
                   <form className="review-form" onSubmit={submitReview}>
                     <label>
                       Your name
-                      <input value={formState.reviewerName} onChange={(e) => setFormState((s) => ({ ...s, reviewerName: e.target.value }))} />
+                      <input aria-invalid={!!fieldErrors.reviewerName} value={formState.reviewerName} onChange={(e) => setFormState((s) => ({ ...s, reviewerName: e.target.value }))} />
+                      {fieldErrors.reviewerName && <div className="error" style={{ marginTop: 6 }}>{fieldErrors.reviewerName}</div>}
                     </label>
                     <label>
                       Difficulty (1-5)
-                      <input type="number" min={1} max={5} value={formState.difficulty} onChange={(e) => setFormState((s) => ({ ...s, difficulty: e.target.value }))} />
+                      <input aria-invalid={!!fieldErrors.difficulty} type="number" min={1} max={5} value={formState.difficulty} onChange={(e) => setFormState((s) => ({ ...s, difficulty: e.target.value }))} />
+                      {fieldErrors.difficulty && <div className="error" style={{ marginTop: 6 }}>{fieldErrors.difficulty}</div>}
                     </label>
                     <label>
                       Workload per week (hours)
-                      <input value={formState.workload} onChange={(e) => setFormState((s) => ({ ...s, workload: e.target.value }))} />
+                      <input aria-invalid={!!fieldErrors.workload} value={formState.workload} onChange={(e) => setFormState((s) => ({ ...s, workload: e.target.value }))} />
+                      {fieldErrors.workload && <div className="error" style={{ marginTop: 6 }}>{fieldErrors.workload}</div>}
                     </label>
                     <label>
                       Date taken
-                      <input type="date" value={formState.date_taken} onChange={(e) => setFormState((s) => ({ ...s, date_taken: e.target.value }))} />
+                      <input aria-invalid={!!fieldErrors.date_taken} type="date" value={formState.date_taken} onChange={(e) => setFormState((s) => ({ ...s, date_taken: e.target.value }))} />
+                      {fieldErrors.date_taken && <div className="error" style={{ marginTop: 6 }}>{fieldErrors.date_taken}</div>}
                     </label>
                     <label>
                       Rating (1-5)
-                      <input type="number" min={1} max={5} value={formState.rating} onChange={(e) => setFormState((s) => ({ ...s, rating: e.target.value }))} />
+                      <input aria-invalid={!!fieldErrors.rating} type="number" min={1} max={5} value={formState.rating} onChange={(e) => setFormState((s) => ({ ...s, rating: e.target.value }))} />
+                      {fieldErrors.rating && <div className="error" style={{ marginTop: 6 }}>{fieldErrors.rating}</div>}
                     </label>
                     <label>
                       Comment
-                      <textarea value={formState.comment} onChange={(e) => setFormState((s) => ({ ...s, comment: e.target.value }))} />
+                      <textarea aria-invalid={!!fieldErrors.comment} value={formState.comment} onChange={(e) => setFormState((s) => ({ ...s, comment: e.target.value }))} />
+                      {fieldErrors.comment && <div className="error" style={{ marginTop: 6 }}>{fieldErrors.comment}</div>}
                     </label>
                     {formError && <p className="error">{formError}</p>}
                     <div>
-                      <button className="btn primary" type="submit" disabled={formSubmitting}>{formSubmitting ? 'Submitting…' : 'Submit review'}</button>
+                      <button className="btn primary" type="submit" disabled={formSubmitting}>{formSubmitting ? 'Submitting..' : 'Submit review'}</button>
                     </div>
                   </form>
                 )}
@@ -343,6 +386,21 @@ export default function Courses() {
                     })}
                   </div>
                 )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {rejectionModal && (
+        <div className="modal-overlay" role="dialog" aria-modal="true">
+          <div className="modal">
+            <button className="modal-close" onClick={() => setRejectionModal(false)} aria-label="Close">×</button>
+            <div className="modal-content">
+              <h2>Review not accepted</h2>
+              <p>Your review didn't pass our community standards — please be nice when posting. If you think this was a mistake, try rewording your review and submit again.</p>
+              <div style={{ marginTop: 12 }}>
+                <button className="btn primary" onClick={() => setRejectionModal(false)}>OK</button>
               </div>
             </div>
           </div>

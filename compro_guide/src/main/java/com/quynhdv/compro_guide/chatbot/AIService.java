@@ -25,7 +25,7 @@ public class AIService {
         String url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=" + geminiApiKey;
 
         Map<String, Object> textPart = new HashMap<>();
-        textPart.put("text", "Analyze the sentiment of this text and return only 'positive', 'neutral', or 'negative': " + text);
+        textPart.put("text", "Check if the following course review is not derogatory: return pass/failed " + text);
         Map<String, Object> parts = new HashMap<>();
         parts.put("parts", Collections.singletonList(textPart));
         List<Object> contents = new ArrayList<>();
