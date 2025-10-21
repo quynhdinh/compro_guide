@@ -18,7 +18,7 @@ export default function Courses() {
     workload: 15,
     date_taken: '2025-01-01',
     rating: 5,
-    comment: 'This course is amazing'
+    comment: 'This course is amazing. I wish I had taken it sooner!'
   });
   const [formError, setFormError] = useState(null);
   const [fieldErrors, setFieldErrors] = useState({});
@@ -211,7 +211,7 @@ export default function Courses() {
       }
       // reset form
   setShowReviewForm(false);
-  setFormState({ reviewerName: 'Anonymous', difficulty: 3, workload: '', date_taken: '', rating: 5, comment: 'This course is amazing' });
+  setFormState({ reviewerName: 'Anonymous', difficulty: 3, workload: 12, date_taken: '2025-04-29', rating: 5, comment: 'This course is amazing. I wish I had taken it sooner!' });
   setFieldErrors({});
     } catch (err) {
       setFormError(err.message || 'Failed to submit review');

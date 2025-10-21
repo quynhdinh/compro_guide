@@ -21,7 +21,7 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 
-@Configuration
+@Configuration("csvDataLoader")
 @Slf4j
 public class CsvDataLoader {
 
@@ -29,6 +29,7 @@ public class CsvDataLoader {
     CommandLineRunner initDatabase(CourseRepository courseRepository,
                                  ReviewRepository reviewRepository,
                                  BlogRepository blogRepository) {
+        log.info("CsvDataLoader running!");
         return args -> {
             if (courseRepository.count() == 0) {
                 loadCourses(courseRepository);

@@ -1,5 +1,8 @@
 package com.quynhdv.compro_guide.reviews;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -32,4 +35,17 @@ public class Review {
 	private Integer workload;
 	@Column(name = "created", nullable = false)
 	private Integer created;
+	// ignore comment here
+	public Map<String, Object> toMap() {
+		Map<String, Object> map = new HashMap<>();
+		map.put("reviewId", reviewId);
+		map.put("courseId", courseId);
+		map.put("reviewerName", reviewerName);
+		map.put("rating", rating);
+		map.put("dateTaken", dateTaken);
+		map.put("difficulty", difficulty);
+		map.put("workload", workload);
+		map.put("created", created);
+		return map;
+	}
 }

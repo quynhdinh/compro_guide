@@ -45,7 +45,7 @@ public class ReviewController {
             log.info("Reject with verdict " + verdict);
             return Optional.empty();
         }
-        log.info("Passed [" + review.comment() + " ] with verdict " + verdict);
+        log.info("Passed [" + review.comment() + "] with verdict " + verdict);
         return Optional.ofNullable(reviewService.createReview(r));
 
     }

@@ -7,6 +7,8 @@ import jakarta.persistence.Id;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Table;
+import java.util.HashMap;
+import java.util.Map;
 @Entity
 @Table(name = "blogs")
 @Data
@@ -22,4 +24,14 @@ public class Blog {
     private String tags;
 	@Column(name = "created", nullable = false)
 	private Integer created;
+    // ignore content field in toMap
+    public Map<String, Object> toMap() {
+        Map<String, Object> map = new HashMap<>();
+        map.put("blogId", blogId);
+        map.put("title", title);
+        // map.put("content", content);
+        map.put("tags", tags);
+        map.put("created", created);
+        return map;
+    }
 }

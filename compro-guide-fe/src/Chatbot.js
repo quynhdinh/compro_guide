@@ -21,11 +21,20 @@ export default function Chatbot() {
     const id = Date.now();
     setMessages(prev => [...prev, { id, from: 'user', text }]);
     setInput('');
-    // naive bot reply after short delay
-    setTimeout(() => {
-      const reply = autoReply(text);
-      setMessages(prev => [...prev, { id: id + 1, from: 'bot', text: reply }]);
-    }, 550 + Math.random() * 700);
+    // call backend AI API
+    (async () => {
+      try {
+        const url = '/api/ai/bot?prompt=' + encodeURIComponent(text);
+        const resp = await fetch(url);
+        if (!resp.ok) throw new Error(`Request failed: ${resp.status} ${resp.statusText}`);
+        // expect a plain string response or JSON { reply: '...' }
+        let replyText = await resp.text();
+        setMessages(prev => [...prev, { id: id + 1, from: 'bot', text: replyText || "(no reply)" }]);
+      } catch (err) {
+        console.log(err);
+        setMessages(prev => [...prev, { id: id + 1, from: 'bot', text: "Sorry, I couldn't reach the assistant right now." }]);
+      }
+    })();
   }
 
   function autoReply(text) {
