@@ -33,7 +33,9 @@ public class ReviewController {
         r.setRating(review.rating());
         r.setDifficulty(review.difficulty());
         r.setWorkload(review.workload());
+        r.setDateTaken(review.date_taken());
         r.setCreated((int)(System.currentTimeMillis() / 1000L));
+        System.out.println(r);
         return reviewService.createReview(r);
     }
 }
@@ -41,6 +43,7 @@ record ReviewDTO(
     String courseId,
     String reviewerName,
     String comment,
+    Integer date_taken,
     int rating,
     int difficulty,
     int workload

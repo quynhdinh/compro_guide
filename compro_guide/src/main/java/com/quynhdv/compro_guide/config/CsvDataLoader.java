@@ -71,7 +71,6 @@ public class CsvDataLoader {
             String[] header = reader.readNext(); // skip header
             String[] line;
             List<Review> reviews = new ArrayList<>();
-            
             while ((line = reader.readNext()) != null) {
                 Review review = new Review();
                 review.setCourseId(line[0]);           // course_id
@@ -80,7 +79,8 @@ public class CsvDataLoader {
                 review.setRating(Integer.parseInt(line[3]));        // rating
                 review.setDifficulty(Integer.parseInt(line[4]));    // difficulty
                 review.setWorkload(Integer.parseInt(line[5]));      // workload
-                review.setCreated(Integer.parseInt(line[6]));       // created
+                review.setDateTaken(Integer.parseInt(line[6]));       // date_taken
+                review.setCreated(Integer.parseInt(line[7]));       // created
                 reviews.add(review);
             }
             

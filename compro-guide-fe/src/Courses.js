@@ -134,7 +134,6 @@ export default function Courses() {
       .then(async (resp) => {
         if (!resp.ok) throw new Error(`Request failed: ${resp.status} ${resp.statusText}`);
         const data = await resp.json();
-        console.log(data);
         return data;
       })
       .then((data) => setCourseReviews(Array.isArray(data) ? data : []))
@@ -162,7 +161,7 @@ export default function Courses() {
         rating: Number(formState.rating),
         difficulty: Number(formState.difficulty),
         workload: formState.workload,
-        date_taken: 'formState.date_taken' || null
+        date_taken: (new Date(formState.date_taken).getTime()) / 1000 || null
       };
       const resp = await fetch('http://localhost:8080/api/reviews', {
         method: 'POST',
@@ -335,7 +334,6 @@ export default function Courses() {
                             <span className="badge">Workload: {r.workload ?? 'N/A'} hrs / week</span>
                             {(() => {
                               const taken = r.date_taken ?? r.dateTaken ?? r.taken ?? r.takenDate ?? null;
-                              console.log('taken date:', taken);
                               const fmt = formatDateTaken(taken);
                               return fmt ? <span className="badge">Taken on: {fmt}</span> : null;
                             })()}
