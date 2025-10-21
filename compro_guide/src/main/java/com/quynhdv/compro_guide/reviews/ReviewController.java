@@ -3,16 +3,21 @@ package com.quynhdv.compro_guide.reviews;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.bind.annotation.CrossOrigin;
 
-import lombok.AllArgsConstructor;
+import com.quynhdv.compro_guide.chatbot.AIService;
 
-import java.util.List;
+import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
+import java.util.*;
 
 @AllArgsConstructor
 @RestController
 @RequestMapping("/api/reviews")
 @CrossOrigin
+@Slf4j
 public class ReviewController {
     private final ReviewService reviewService;
+    private final AIService aiService;
 
     @GetMapping
     public List<Review> getAllReviews() {
@@ -25,7 +30,7 @@ public class ReviewController {
     }
 
     @PostMapping
-    public Review createReview(@RequestBody ReviewDTO review) {
+    public Optional<Review> createReview(@RequestBody ReviewDTO review) {
         var r = new Review();
         r.setCourseId(review.courseId());
         r.setReviewerName(review.reviewerName());
@@ -35,16 +40,13 @@ public class ReviewController {
         r.setWorkload(review.workload());
         r.setDateTaken(review.date_taken());
         r.setCreated((int)(System.currentTimeMillis() / 1000L));
-        System.out.println(r);
-        return reviewService.createReview(r);
+        String verdict = aiService.analyzeSentiment(review.comment());
+        if(verdict.equals("negative")){
+            log.info("Reject with verdict " + verdict);
+            return Optional.empty();
+        }
+        log.info("Passed " + review.comment() + " with sentiment " + verdict);
+        return Optional.ofNullable(reviewService.createReview(r));
+
     }
 }
-record ReviewDTO(
-    String courseId,
-    String reviewerName,
-    String comment,
-    Integer date_taken,
-    int rating,
-    int difficulty,
-    int workload
-) {}
