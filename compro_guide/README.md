@@ -5,7 +5,12 @@ This is a platform of Compro students to share their knowledge and help each oth
 - Blog posts. User can create and view blogs about various topics related to Compro program. User can also filter by tags to find relevant posts.
 - Course reviews. User can view and submit reviews for each course.
 
-### AI Features:
+   Table: `courses`(*course_id* | course_code | course_name | description | credits)
+
+  Table: `reviews`(*review_id* | course_id | reviewer_name | rating | comment | created_at)
+
+  Table: `blogs`(*blog_id* | title | content | tags | created)
+
 #### Sentiment Analysis for Course Reviews
 For each review is submitted, an AI model from backend side will check if the comment is relevant as a course review or not. If it is relevant, the review will be published. If not, the user will be notified that their review is not relevant.
 
